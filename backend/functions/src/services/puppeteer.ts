@@ -24,7 +24,10 @@ const validateCookie = (cookie: CookieParam) => {
 };
 
 const READABILITY_JS = fs.readFileSync(require.resolve('@mozilla/readability/Readability.js'), 'utf-8');
-
+function isValidURL(url) {
+    const regex = /^(https?:\/\/)?((?!\d{1,3}(\.\d{1,3}){3})([a-z0-9\-]+\.)+[a-z]{2,}(:[0-9]{1,5})?(\/[^\s]*)?)?$/i;
+    return regex.test(url);
+}
 
 export interface ImgBrief {
     src: string;
@@ -345,6 +348,13 @@ export class PuppeteerControl extends AsyncService {
             t0 ??= Date.now();
             const requestUrl = req.url();
             if (!requestUrl.startsWith("http:") && !requestUrl.startsWith("https:") && requestUrl !== 'about:blank') {
+                return req.abort('blockedbyclient', 1000);
+            }
+            if (requestUrl.includes('.ico') || requestUrl.includes('localhost')) {
+                return req.abort('blockedbyclient', 1000);
+            }
+            console.log('request url', requestUrl)
+            if (!isValidURL(requestUrl)) {
                 return req.abort('blockedbyclient', 1000);
             }
             const tldParsed = tldExtract(requestUrl);

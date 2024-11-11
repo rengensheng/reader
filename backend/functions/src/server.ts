@@ -17,6 +17,10 @@ app.use(express.json());
 app.get('/:url(*)', async (req, res) => {
   try {
     const url = req.params.url;
+    if (url.includes('.ico') || url.includes('.css') || url.includes('.js')) {
+      res.status(400).json({ error: 'Invalid URL' });
+      return;
+    }
     await crawlerHost.crawl(req, res);
   } catch (error) {
     console.error('Error during crawl:', error);
